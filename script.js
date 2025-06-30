@@ -1,78 +1,79 @@
-let Indexx = 0;
-let Category = 'accueil';
+let currentIndex = 0;
+let currentCategory = 'accueil';
 let visibleImages = [];
 
 function filtre(categorie) {
-    Category = categorie;
-    Indexx = 0;
+    currentCategory = categorie;
+    currentIndex = 0;
     visibleImages = [];
 
-    let images = document.querySelectorAll('.image');
-    images.forEach(image => {
-        if (image.classList.contains(categorie)) {
-            image.classList.remove('hidden');
-            visibleImages.push(image);
-        } else {
-            image.classList.add('hidden');
-        }
-    });
-    
-    updateCarousel();
-    updatePrev();
-}
-
-function updateCarousel() {
+    // Masquer toutes les images
     document.querySelectorAll('.image').forEach(img => {
-        img.style.display = 'none';
         img.classList.remove('active');
     });
 
-    if (visibleImages[Indexx]) {
-        visibleImages[Indexx].style.display = 'block';
-        visibleImages[Indexx].classList.add('active');
+    // Filtrer les images visibles
+    document.querySelectorAll(`.image.${categorie}`).forEach(img => {
+        visibleImages.push(img);
+    });
+
+    // Afficher la première image
+    if (visibleImages.length > 0) {
+        visibleImages[0].classList.add('active');
     }
+
+    updatePreview();
 }
 
-function updatePrev() {
-    const previewContainer = document.querySelector('.preview-container');
+function updatePreview() {
+    const previewContainer = document.getElementById('preview-container');
     previewContainer.innerHTML = '';
 
-    for (let i = -2; i <= 2; i++) {
-        const index = (Indexx + i + visibleImages.length) % visibleImages.length;
-        const img = visibleImages[index];
-        
-        const prevImg = document.createElement('div');
-        prevImg.className = `preview-item ${i === 0 ? 'active' : ''}`;
-        prevImg.innerHTML = `<img src="${img.src}" alt="Preview">`;
-        prevImg.onclick = () => {
-            Indexx = index;
-            updateCarousel();
-            updatePrev();
+    visibleImages.forEach((img, index) => {
+        const previewItem = document.createElement('div');
+        previewItem.className = `preview-item ${index === currentIndex ? 'active' : ''}`;
+        previewItem.innerHTML = `<img src="${img.src}" alt="Preview">`;
+        previewItem.onclick = () => {
+            currentIndex = index;
+            showCurrentImage();
+            updatePreview();
         };
-        
-        previewContainer.appendChild(prevImg);
-    }
+        previewContainer.appendChild(previewItem);
+    });
+}
+
+function showCurrentImage() {
+    visibleImages.forEach((img, index) => {
+        img.classList.toggle('active', index === currentIndex);
+    });
 }
 
 function prev() {
     if (visibleImages.length === 0) return;
-    Indexx = (Indexx - 1 + visibleImages.length) % visibleImages.length;
-    updateCarousel();
-    updatePrev();
+    currentIndex = (currentIndex - 1 + visibleImages.length) % visibleImages.length;
+    showCurrentImage();
+    updatePreview();
 }
 
 function next() {
     if (visibleImages.length === 0) return;
-    Indexx = (Indexx + 1) % visibleImages.length;
-    updateCarousel();
-    updatePrev();
+    currentIndex = (currentIndex + 1) % visibleImages.length;
+    showCurrentImage();
+    updatePreview();
 }
 
+// Initialisation
 document.addEventListener('DOMContentLoaded', () => {
-    const previewContainer = document.createElement('div');
-    previewContainer.className = 'preview-container';
-    document.querySelector('.gallery').after(previewContainer);
-
+    // Créer le conteneur de prévisualisation s'il n'existe pas
+    if (!document.getElementById('preview-container')) {
+        const container = document.createElement('div');
+        container.id = 'preview-container';
+        container.className = 'preview-container';
+        document.body.appendChild(container);
+    }
+    
     filtre('accueil');
-    setInterval(next, 5000);
+    
+    // Défilement automatique optionnel
+    setInterval(next, 3000);
 });
