@@ -74,6 +74,4 @@ document.addEventListener('DOMContentLoaded', () => {
     
     filtre('accueil');
     
-    // Défilement automatique optionnel
-    setInterval(next, 3000);
 });
